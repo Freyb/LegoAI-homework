@@ -1,6 +1,5 @@
 import keras
 from keras.datasets import mnist
-# from readPicture import imageMatrix
 import numpy as np
 
 model = None
@@ -51,10 +50,6 @@ def train():
     score = model.evaluate(x_test, y_test, verbose=1)
     print('Test loss:', score[0])
     print('Test accuracy:', score[1])
-    # print(imageMatrix.shape)
-    # result = model.predict(imageMatrix)
-    # result = np.argmax(result, axis=1)
-    # print(result)
 
 
 def testImage(img):
