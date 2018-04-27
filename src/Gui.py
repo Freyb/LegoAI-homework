@@ -1,6 +1,6 @@
 from tkinter import *
 from PIL import Image, ImageDraw
-from main import Model
+from src.Model import Model
 import Augmentor
 b1 = "up"
 xold, yold = None, None

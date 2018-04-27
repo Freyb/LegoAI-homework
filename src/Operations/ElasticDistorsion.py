@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 
 
-class Distort():
+class ElasticDistort():
     """
     This class performs randomised, elastic distortions on images.
     """

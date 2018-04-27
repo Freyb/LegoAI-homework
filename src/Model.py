@@ -2,7 +2,7 @@ import keras
 from keras.datasets import mnist
 import numpy as np
 from PIL import Image
-from MyDistorsion import Distort
+from src.Operations.ElasticDistorsion import ElasticDistort
 
 
 class Model():
@@ -15,7 +15,7 @@ class Model():
         self.epochs = 1
 
     def gen_data(self):
-        d = Distort(probability=0.9, grid_width=2, grid_height=2, magnitude=5)
+        d = ElasticDistort(probability=0.9, grid_width=2, grid_height=2, magnitude=5)
 
         images = []
         im = Image.open("synt_plus.png")
