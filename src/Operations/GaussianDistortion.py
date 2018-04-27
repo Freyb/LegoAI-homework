@@ -2,7 +2,9 @@ from math import floor, exp
 from PIL import Image
 import numpy as np
 
-class GaussianDistortion():
+from src.Operations.Operations import Operation
+
+class GaussianDistortion(Operation):
     """
     This class performs randomised, elastic gaussian distortions on images.
     """
@@ -55,6 +57,7 @@ class GaussianDistortion():
 
          e^{- \Big( \\frac{(x-\\text{mex})^2}{\\text{sdx}} + \\frac{(y-\\text{mey})^2}{\\text{sdy}} \Big) }
         """
+        Operation.__init__(self, probability)
         self.grid_width = grid_width
         self.grid_height = grid_height
         self.magnitude = abs(magnitude)

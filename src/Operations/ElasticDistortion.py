@@ -3,8 +3,9 @@ import random
 from PIL import Image
 import numpy as np
 
+from src.Operations.Operations import Operation
 
-class ElasticDistort():
+class ElasticDistortion(Operation):
     """
     This class performs randomised, elastic distortions on images.
     """
@@ -33,6 +34,7 @@ class ElasticDistort():
         :type magnitude: Integer
         """
 
+        Operation.__init__(self, probability)
         self.grid_width = grid_width
         self.grid_height = grid_height
         self.magnitude = abs(magnitude)
