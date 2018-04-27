@@ -16,7 +16,7 @@ from __future__ import (absolute_import, division,
 from builtins import *
 
 from .Operations import *
-from .ImageUtilities import scan_directory, scan, AugmentorImage
+from src.ImageUtilities import scan
 
 import os
 import sys
@@ -28,6 +28,10 @@ import numpy as np
 
 from tqdm import tqdm
 from PIL import Image
+
+from src.Operations.Operations import Operation
+from src.Operations.ElasticDistortion import ElasticDistortion
+from src.Operations.GaussianDistortion import GaussianDistortion
 
 
 class Pipeline(object):
@@ -215,50 +219,8 @@ class Pipeline(object):
         # Currently we return only the first image if it is a list
         # for the generator functions.  This will be fixed in a future
         # version.
+        print("LEN OF IMAGES", len(images))
         return images[0]
-
-    def _execute_with_array(self, image):
-        """
-        Private method used to execute a pipeline on array or matrix data.
-        :param image: The image to pass through the pipeline.
-        :type image: Array like object.
-        :return: The augmented image.
-        """
-
-        pil_image = [Image.fromarray(image)]
-
-        for operation in self.operations:
-            r = round(random.uniform(0, 1), 1)
-            if r <= operation.probability:
-                pil_image = operation.perform_operation(pil_image)
-
-        numpy_array = np.asarray(pil_image[0])
-
-        return numpy_array
-
-    def set_save_format(self, save_format):
-        """
-        Set the save format for the pipeline. Pass the value
-        :attr:`save_format="auto"` to allow Augmentor to choose
-        the correct save format based on each individual image's
-        file extension.
-
-        If :attr:`save_format` is set to, for example,
-        :attr:`save_format="JPEG"` or :attr:`save_format="JPG"`,
-        Augmentor will attempt to save the files using the
-        JPEG format, which may result in errors if the file cannot
-        be saved in this format, such as PNG images with an alpha
-        channel.
-
-        :param save_format: The save format to save the images
-         when writing to disk.
-        :return: None
-        """
-
-        if save_format == "auto":
-            self.save_format = None
-        else:
-            self.save_format = save_format
 
     def sample(self, n):
         """
@@ -297,22 +259,6 @@ class Pipeline(object):
                     progress_bar.update(1)
                 sample_count += 1
         progress_bar.close()
-
-    def sample_with_array(self, image_array, save_to_disk=False):
-        """
-        Generate images using a single image in array-like format.
-
-        .. seealso::
-         See :func:`keras_image_generator_without_replacement()` for
-
-        :param image_array: The image to pass through the pipeline.
-        :param save_to_disk: Whether to save to disk or not (default).
-        :return:
-        """
-        a = AugmentorImage(image_path=None, output_directory=None)
-        a.image_PIL = Image.fromarray(image_array)
-
-        return self._execute(a, save_to_disk)
 
     def add_operation(self, operation):
         """
@@ -385,7 +331,7 @@ class Pipeline(object):
         if not 0 < probability <= 1:
             raise ValueError(Pipeline._probability_error_text)
         else:
-            self.add_operation(Distort(probability=probability, grid_width=grid_width,
+            self.add_operation(ElasticDistortion(probability=probability, grid_width=grid_width,
                                        grid_height=grid_height, magnitude=magnitude))
 
     def gaussian_distortion(self, probability, grid_width, grid_height, magnitude, corner, method, mex=0.5, mey=0.5,
@@ -454,239 +400,3 @@ class Pipeline(object):
                                                   mey=mey, sdx=sdx, sdy=sdy))
 
 
-    def skew_left_right(self, probability, magnitude=1):
-        """
-        Skew an image by tilting it left or right by a random amount. The
-        magnitude of this skew can be set to a maximum using the
-        magnitude parameter. This can be either a scalar representing the
-        maximum tilt, or vector representing a range.
-
-        To see examples of the various skews, see :ref:`perspectiveskewing`.
-
-        :param probability: A value between 0 and 1 representing the
-         probability that the operation should be performed.
-        :param magnitude: The maximum tilt, which must be value between 0.1
-         and 1.0, where 1 represents a tilt of 45 degrees.
-        :type probability: Float
-        :type magnitude: Float
-        :return: None
-        """
-        if not 0 < probability <= 1:
-            raise ValueError(Pipeline._probability_error_text)
-        elif not 0 < magnitude <= 1:
-            raise ValueError("The magnitude argument must be greater than 0 and less than or equal to 1.")
-        else:
-            self.add_operation(Skew(probability=probability, skew_type="TILT_LEFT_RIGHT", magnitude=magnitude))
-
-    def skew_top_bottom(self, probability, magnitude=1):
-        """
-        Skew an image by tilting it forwards or backwards by a random amount.
-        The magnitude of this skew can be set to a maximum using the
-        magnitude parameter. This can be either a scalar representing the
-        maximum tilt, or vector representing a range.
-
-        To see examples of the various skews, see :ref:`perspectiveskewing`.
-
-        :param probability: A value between 0 and 1 representing the
-         probability that the operation should be performed.
-        :param magnitude: The maximum tilt, which must be value between 0.1
-         and 1.0, where 1 represents a tilt of 45 degrees.
-        :type probability: Float
-        :type magnitude: Float
-        :return: None
-        """
-        if not 0 < probability <= 1:
-            raise ValueError(Pipeline._probability_error_text)
-        elif not 0 < magnitude <= 1:
-            raise ValueError("The magnitude argument must be greater than 0 and less than or equal to 1.")
-        else:
-            self.add_operation(Skew(probability=probability,
-                                    skew_type="TILT_TOP_BOTTOM",
-                                    magnitude=magnitude))
-
-    def skew_tilt(self, probability, magnitude=1):
-        """
-        Skew an image by tilting in a random direction, either forwards,
-        backwards, left, or right, by a random amount. The magnitude of
-        this skew can be set to a maximum using the magnitude parameter.
-        This can be either a scalar representing the maximum tilt, or
-        vector representing a range.
-
-        To see examples of the various skews, see :ref:`perspectiveskewing`.
-
-        :param probability: A value between 0 and 1 representing the
-         probability that the operation should be performed.
-        :param magnitude: The maximum tilt, which must be value between 0.1
-         and 1.0, where 1 represents a tilt of 45 degrees.
-        :type probability: Float
-        :type magnitude: Float
-        :return: None
-        """
-        if not 0 < probability <= 1:
-            raise ValueError(Pipeline._probability_error_text)
-        elif not 0 < magnitude <= 1:
-            raise ValueError("The magnitude argument must be greater than 0 and less than or equal to 1.")
-        else:
-            self.add_operation(Skew(probability=probability,
-                                    skew_type="TILT",
-                                    magnitude=magnitude))
-
-    def skew_corner(self, probability, magnitude=1):
-        """
-        Skew an image towards one corner, randomly by a random magnitude.
-
-        To see examples of the various skews, see :ref:`perspectiveskewing`.
-
-        :param probability: A value between 0 and 1 representing the
-         probability that the operation should be performed.
-        :param magnitude: The maximum skew, which must be value between 0.1
-         and 1.0.
-        :return:
-        """
-        if not 0 < probability <= 1:
-            raise ValueError(Pipeline._probability_error_text)
-        elif not 0 < magnitude <= 1:
-            raise ValueError("The magnitude argument must be greater than 0 and less than or equal to 1.")
-        else:
-            self.add_operation(Skew(probability=probability,
-                                    skew_type="CORNER",
-                                    magnitude=magnitude))
-
-    def skew(self, probability, magnitude=1):
-        """
-        Skew an image in a random direction, either left to right,
-        top to bottom, or one of 8 corner directions.
-
-        To see examples of all the skew types, see :ref:`perspectiveskewing`.
-
-        :param probability: A value between 0 and 1 representing the
-         probability that the operation should be performed.
-        :param magnitude: The maximum skew, which must be value between 0.1
-         and 1.0.
-        :type probability: Float
-        :type magnitude: Float
-        :return: None
-        """
-        if not 0 < probability <= 1:
-            raise ValueError(Pipeline._probability_error_text)
-        elif not 0 < magnitude <= 1:
-            raise ValueError("The magnitude argument must be greater than 0 and less than or equal to 1.")
-        else:
-            self.add_operation(Skew(probability=probability,
-                                    skew_type="RANDOM",
-                                    magnitude=magnitude))
-
-    def shear(self, probability, max_shear_left, max_shear_right):
-        """
-        Shear the image by a specified number of degrees.
-
-        In practice, shear angles of more than 25 degrees can cause
-        unpredictable behaviour. If you are observing images that are
-        incorrectly rendered (e.g. they do not contain any information)
-        then reduce the shear angles.
-
-        :param probability: The probability that the operation is performed.
-        :param max_shear_left: The max number of degrees to shear to the left.
-         Cannot be larger than 25 degrees.
-        :param max_shear_right: The max number of degrees to shear to the
-         right. Cannot be larger than 25 degrees.
-        :return: None
-        """
-        if not 0 < probability <= 1:
-            raise ValueError(Pipeline._probability_error_text)
-        elif not 0 < max_shear_left <= 25:
-            raise ValueError("The max_shear_left argument must be between 0 and 25.")
-        elif not 0 < max_shear_right <= 25:
-            raise ValueError("The max_shear_right argument must be between 0 and 25.")
-        else:
-            self.add_operation(Shear(probability=probability,
-                                     max_shear_left=max_shear_left,
-                                     max_shear_right=max_shear_right))
-
-
-    def ground_truth(self, ground_truth_directory):
-        """
-        Specifies a directory containing corresponding images that
-        constitute respective ground truth images for the images
-        in the current pipeline.
-
-        This function will search the directory specified by
-        :attr:`ground_truth_directory` and will associate each ground truth
-        image with the images in the pipeline by file name.
-
-        Therefore, an image titled ``cat321.jpg`` will match with the
-        image ``cat321.jpg`` in the :attr:`ground_truth_directory`.
-        The function respects each image's label, therefore the image
-        named ``cat321.jpg`` with the label ``cat`` will match the image
-        ``cat321.jpg`` in the subdirectory ``cat`` relative to
-        :attr:`ground_truth_directory`.
-
-        Typically used to specify a set of ground truth or gold standard
-        images that should be augmented alongside the original images
-        of a dataset, such as image masks or semantic segmentation ground
-        truth images.
-
-        A number of such data sets are openly available, see for example
-        `https://arxiv.org/pdf/1704.06857.pdf <https://arxiv.org/pdf/1704.06857.pdf>`_
-        (Garcia-Garcia et al., 2017).
-
-        :param ground_truth_directory: A directory containing the
-         ground truth images that correspond to the images in the
-         current pipeline.
-        :type ground_truth_directory: String
-        :return: None.
-        """
-
-        num_of_ground_truth_images_added = 0
-
-        # Progress bar
-        progress_bar = tqdm(total=len(self.augmentor_images), desc="Processing", unit=' Images', leave=False)
-
-        if len(self.class_labels) == 1:
-            for augmentor_image_idx in range(len(self.augmentor_images)):
-                ground_truth_image = os.path.join(ground_truth_directory,
-                                                  self.augmentor_images[augmentor_image_idx].image_file_name)
-                if os.path.isfile(ground_truth_image):
-                    self.augmentor_images[augmentor_image_idx].ground_truth = ground_truth_image
-                    num_of_ground_truth_images_added += 1
-        else:
-            for i in range(len(self.class_labels)):
-                for augmentor_image_idx in range(len(self.augmentor_images)):
-                    ground_truth_image = os.path.join(ground_truth_directory,
-                                                      self.augmentor_images[augmentor_image_idx].class_label,
-                                                      self.augmentor_images[augmentor_image_idx].image_file_name)
-                    if os.path.isfile(ground_truth_image):
-                        if self.augmentor_images[augmentor_image_idx].class_label == self.class_labels[i][0]:
-                            # Check files are the same size. There may be a better way to do this.
-                            original_image_dimensions = \
-                                Image.open(self.augmentor_images[augmentor_image_idx].image_path).size
-                            ground_image_dimensions = Image.open(ground_truth_image).size
-                            if original_image_dimensions == ground_image_dimensions:
-                                self.augmentor_images[augmentor_image_idx].ground_truth = ground_truth_image
-                                num_of_ground_truth_images_added += 1
-                                progress_bar.update(1)
-
-        progress_bar.close()
-
-        # May not be required after all, check later.
-        if num_of_ground_truth_images_added != 0:
-            self.process_ground_truth_images = True
-
-        print("%s ground truth image(s) found." % num_of_ground_truth_images_added)
-
-    def get_ground_truth_paths(self):
-        """
-        Returns a list of image and ground truth image path pairs. Used for
-        verification purposes to ensure the ground truth images match to the
-        images containing in the pipeline.
-
-        :return: A list of tuples containing the image path and ground truth
-         path pairs.
-        """
-        paths = []
-
-        for augmentor_image in self.augmentor_images:
-            print("Image path: %s\nGround truth path: %s\n---\n" % (augmentor_image.image_path, augmentor_image.ground_truth))
-            paths.append((augmentor_image.image_path, augmentor_image.ground_truth))
-
-        return paths
