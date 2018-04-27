@@ -1,16 +1,17 @@
 from tkinter import *
 from PIL import Image, ImageDraw
-from main import train, testImage
-
+from main import Model
+import Augmentor
 b1 = "up"
 xold, yold = None, None
 image1, drawimg = None, None
-
+model = Model()
 
 def testCallback(canv):
-    global image1
+    global image1, model
+    #image1 = image1.resize((28,28))
     image1.save("./valami.png")
-    testImage(image1)
+    model.testImage(image1)
 
 
 def clearCallback(canv):
@@ -67,5 +68,6 @@ def motion(event):
 
 
 if __name__ == "__main__":
-    train()
+    model.gen_data()
+    model.train()
     main()

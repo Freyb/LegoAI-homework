@@ -140,10 +140,16 @@ class Distort():
 
             return image.transform(image.size, Image.MESH, generated_mesh, resample=Image.BICUBIC)
 
+        vvv = False
         augmented_images = np.empty((len(images), n, w * h))
-        for i in range(0, len(images)):
-            for j in range(0, n):
+        for i in range(len(images)):
+            for j in range(n):
                 augmented_images[i, j] = np.array(do(images[i])).reshape(w * h)
-
+                if not vvv:
+                    xxx = do(images[i])
+                    xxx.save('look2.png')
+                    yyy = np.array(xxx).reshape(w * h)
+                    Image.fromarray(yyy.reshape(28, 28)).convert('L').save('look3.png')
+                    vvv = True
 
         return augmented_images
