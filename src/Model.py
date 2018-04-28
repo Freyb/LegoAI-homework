@@ -2,7 +2,7 @@ import keras
 from keras.datasets import mnist
 import numpy as np
 from PIL import Image
-from src.Operations.ElasticDistorsion import ElasticDistort
+from src.Pipeline import Pipeline
 
 
 class Model():
@@ -12,12 +12,18 @@ class Model():
         self.augmented_train_images = None
         self.num_classes = 11
         self.batch_size = 256
-        self.epochs = 1
+        self.epochs = 10
 
     def gen_data(self):
-        d = ElasticDistort(probability=0.9, grid_width=2, grid_height=2, magnitude=5)
+        print("Start generating augmented images")
+        p = Pipeline("./synthetic")
+        p.random_distortion(probability=0.9, grid_width=4, grid_height=4, magnitude=1)
+        p.random_distortion(probability=0.9, grid_width=4, grid_height=4, magnitude=1)
+        p.random_distortion(probability=0.9, grid_width=4, grid_height=4, magnitude=1)
+        self.augmented_train_images = p.sample(6000)
+        self.augmented_test_images = p.sample(1000)
 
-        images = []
+        """images = []
         im = Image.open("synt_plus.png")
         im = im.convert('L')
         images.append(im)
@@ -27,7 +33,7 @@ class Model():
         self.augmented_test_images = d.perform_operation(images, 1000)
         for i in range(20):
             print("save:")
-            Image.fromarray(self.augmented_train_images[0, i].reshape(28, 28)).convert('L').save('test'+str(i)+'.png');
+            Image.fromarray(self.augmented_train_images[0, i].reshape(28, 28)).convert('L').save('test'+str(i)+'.png');"""
 
     def train(self):
         (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -35,17 +41,13 @@ class Model():
         x_train = x_train.reshape(60000, 784)
         x_test = x_test.reshape(10000, 784)
         print()
-        Image.fromarray(self.augmented_train_images[0][0].reshape(28, 28)).convert('L').save('look4.png')
-        vvv = False
+        #Image.fromarray(self.augmented_train_images[0][0].reshape(28, 28)).convert('L').save('look4.png')
+
         for i, k in enumerate(self.augmented_train_images):
-            print("K ERTEKE:", k.shape)
-            if not vvv:
-                Image.fromarray(k[0].reshape(28, 28)).convert('L').save('look5.png')
-                vvv = True
             x_train = np.concatenate((x_train, k), axis=0)
             y_train = np.append(y_train, [i + 10] * len(k))
 
-        Image.fromarray(x_train[60000].reshape(28, 28)).convert('L').save('look6.png')
+        #Image.fromarray(x_train[60000].reshape(28, 28)).convert('L').save('look6.png')
 
         perm = np.random.permutation(66000)
         x_temp = x_train.copy()
@@ -56,7 +58,7 @@ class Model():
             y_train[i] = y_temp[perm[i]]
             if y_temp[i] == 10 and not vvv:
                 print("i:", i, "perm:", perm[i])
-                Image.fromarray(x_temp[i].reshape(28, 28)).convert('L').save('look.png')
+                #Image.fromarray(x_temp[i].reshape(28, 28)).convert('L').save('look.png')
                 vvv = True
 
         for i, k in enumerate(self.augmented_test_images):

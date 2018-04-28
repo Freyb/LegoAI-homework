@@ -1,7 +1,7 @@
 from tkinter import *
 from PIL import Image, ImageDraw
 from src.Model import Model
-import Augmentor
+
 b1 = "up"
 xold, yold = None, None
 image1, drawimg = None, None
