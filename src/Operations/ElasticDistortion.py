@@ -41,7 +41,7 @@ class ElasticDistortion(Operation):
         # TODO: Implement non-random magnitude.
         self.randomise_magnitude = True
 
-    def perform_operation(self, images, n):
+    def perform_operation(self, images):
         """
         Distorts the passed image(s) according to the parameters supplied during
         instantiation, returning the newly distorted image.
@@ -141,17 +141,10 @@ class ElasticDistortion(Operation):
                 generated_mesh.append([dimensions[i], polygons[i]])
 
             return image.transform(image.size, Image.MESH, generated_mesh, resample=Image.BICUBIC)
+        
+        augmented_images = []
 
-        vvv = False
-        augmented_images = np.empty((len(images), n, w * h))
-        for i in range(len(images)):
-            for j in range(n):
-                augmented_images[i, j] = np.array(do(images[i])).reshape(w * h)
-                if not vvv:
-                    xxx = do(images[i])
-                    xxx.save('look2.png')
-                    yyy = np.array(xxx).reshape(w * h)
-                    Image.fromarray(yyy.reshape(28, 28)).convert('L').save('look3.png')
-                    vvv = True
+        for image in images:
+            augmented_images.append(do(image))
 
         return augmented_images
