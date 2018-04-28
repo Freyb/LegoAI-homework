@@ -230,7 +230,7 @@ class Pipeline(object):
         print("LEN OF IMAGES", len(images))
         return images[0]
 
-    def sample(self, n):
+    def sample(self, n, save_to_disk=False):
         """
         Generate :attr:`n` number of samples from the current pipeline.
 
@@ -239,8 +239,11 @@ class Pipeline(object):
         are by default stored in an ``output`` directory, relative to the
         path defined during the pipeline's instantiation.
 
+
         :param n: The number of new samples to produce.
+        :param save_to_disk:
         :type n: Integer
+        :type save_to_disk: bool
         :return: None
         """
         if len(self.augmentor_images) == 0:
@@ -257,7 +260,7 @@ class Pipeline(object):
         while sample_count <= n:
             for augmentor_image in self.augmentor_images:
                 if sample_count <= n:
-                    self._execute(augmentor_image)
+                    self._execute(augmentor_image, save_to_disk)
                     file_name_to_print = os.path.basename(augmentor_image.image_path)
                     # This is just to shorten very long file names which obscure the progress bar.
                     if len(file_name_to_print) >= 30:

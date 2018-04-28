@@ -141,7 +141,7 @@ class ElasticDistortion(Operation):
                 generated_mesh.append([dimensions[i], polygons[i]])
 
             return image.transform(image.size, Image.MESH, generated_mesh, resample=Image.BICUBIC)
-        
+
         augmented_images = []
 
         for image in images:
