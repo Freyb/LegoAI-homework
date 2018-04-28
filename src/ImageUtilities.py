@@ -233,7 +233,7 @@ def scan(source_directory, output_directory):
             a.file_format = os.path.splitext(image_path)[1].split(".")[1]
             augmentor_images.append(a)
 
-        class_labels.append((label_counter, parent_directory_name))
+        #class_labels.append((label_counter, parent_directory_name))
 
         return augmentor_images, class_labels
 
@@ -253,7 +253,6 @@ def scan(source_directory, output_directory):
                 augmentor_images.append(a)
             class_labels.append((os.path.split(d)[1], label_counter))
             label_counter += 1
-
         return augmentor_images, class_labels
 
 
