@@ -254,12 +254,16 @@ class Pipeline(object):
         if len(self.operations) == 0:
             raise IndexError("There are no operations associated with this pipeline.")
 
-        for augmentor_image in self.augmentor_images:
+        augmentor_image_list = []
+
+        for i, augmentor_image in enumerate(self.augmentor_images):
             sample_count = 1
             progress_bar = tqdm(total=n, desc="Executing Pipeline", unit=' Samples', leave=False)
+            augmentor_images = [];
 
             while sample_count <= n:
-                self._execute(augmentor_image, save_to_disk)
+                im = self._execute(augmentor_image, save_to_disk)
+                augmentor_images.append(list(im.convert('L').getdata()))
                 file_name_to_print = os.path.basename(augmentor_image.image_path)
                 # This is just to shorten very long file names which obscure the progress bar.
                 if len(file_name_to_print) >= 30:
@@ -269,6 +273,8 @@ class Pipeline(object):
                 progress_bar.update(1)
                 sample_count += 1
             progress_bar.close()
+            augmentor_image_list.append(augmentor_images)
+        return augmentor_image_list
 
     def add_operation(self, operation):
         """
@@ -342,7 +348,7 @@ class Pipeline(object):
             raise ValueError(Pipeline._probability_error_text)
         else:
             self.add_operation(ElasticDistortion(probability=probability, grid_width=grid_width,
-                                       grid_height=grid_height, magnitude=magnitude))
+                                                 grid_height=grid_height, magnitude=magnitude))
 
     def gaussian_distortion(self, probability, grid_width, grid_height, magnitude, corner, method, mex=0.5, mey=0.5,
                             sdx=0.05, sdy=0.05):
@@ -406,7 +412,5 @@ class Pipeline(object):
             self.add_operation(GaussianDistortion(probability=probability, grid_width=grid_width,
                                                   grid_height=grid_height,
                                                   magnitude=magnitude, corner=corner,
-                                                  method=method,  mex=mex,
+                                                  method=method, mex=mex,
                                                   mey=mey, sdx=sdx, sdy=sdy))
-
-
