@@ -20,6 +20,7 @@ from src.ImageUtilities import scan
 
 import os
 import sys
+import glob
 import random
 import uuid
 import warnings
@@ -129,11 +130,18 @@ class Pipeline(object):
         # Get absolute path for output
         abs_output_directory = os.path.join(source_directory, output_directory)
 
+        if os.path.exists(abs_output_directory):
+            for root, dirs, files in os.walk(abs_output_directory, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+
         # Scan the directory that user supplied.
         self.augmentor_images, self.class_labels = scan(source_directory, abs_output_directory)
 
         # Make output directory/directories
-        if len(set(self.class_labels)) <= 1:  # Fixed bad bug by adding set() function here.
+        if len(set(self.class_labels)) < 1:  # Fixed bad bug by adding set() function here.
             if not os.path.exists(abs_output_directory):
                 try:
                     os.makedirs(abs_output_directory)
