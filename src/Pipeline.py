@@ -254,22 +254,21 @@ class Pipeline(object):
         if len(self.operations) == 0:
             raise IndexError("There are no operations associated with this pipeline.")
 
-        sample_count = 1
+        for augmentor_image in self.augmentor_images:
+            sample_count = 1
+            progress_bar = tqdm(total=n, desc="Executing Pipeline", unit=' Samples', leave=False)
 
-        progress_bar = tqdm(total=n, desc="Executing Pipeline", unit=' Samples', leave=False)
-        while sample_count <= n:
-            for augmentor_image in self.augmentor_images:
-                if sample_count <= n:
-                    self._execute(augmentor_image, save_to_disk)
-                    file_name_to_print = os.path.basename(augmentor_image.image_path)
-                    # This is just to shorten very long file names which obscure the progress bar.
-                    if len(file_name_to_print) >= 30:
-                        file_name_to_print = file_name_to_print[0:10] + "..." + \
-                                             file_name_to_print[-10: len(file_name_to_print)]
-                    progress_bar.set_description("Processing %s" % file_name_to_print)
-                    progress_bar.update(1)
+            while sample_count <= n:
+                self._execute(augmentor_image, save_to_disk)
+                file_name_to_print = os.path.basename(augmentor_image.image_path)
+                # This is just to shorten very long file names which obscure the progress bar.
+                if len(file_name_to_print) >= 30:
+                    file_name_to_print = file_name_to_print[0:10] + "..." + \
+                                         file_name_to_print[-10: len(file_name_to_print)]
+                progress_bar.set_description("Processing %s" % file_name_to_print)
+                progress_bar.update(1)
                 sample_count += 1
-        progress_bar.close()
+            progress_bar.close()
 
     def add_operation(self, operation):
         """
