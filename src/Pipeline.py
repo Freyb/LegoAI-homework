@@ -227,7 +227,7 @@ class Pipeline(object):
         # Currently we return only the first image if it is a list
         # for the generator functions.  This will be fixed in a future
         # version.
-        print("LEN OF IMAGES", len(images))
+        # print("LEN OF IMAGES", len(images))
         return images[0]
 
     def sample(self, n, save_to_disk=False):
