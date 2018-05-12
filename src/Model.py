@@ -10,7 +10,7 @@ class Model():
         self.model = None
         self.augmented_test_images = None
         self.augmented_train_images = None
-        self.num_classes = 11
+        self.num_classes = 12
         self.batch_size = 256
         self.epochs = 3
 
@@ -47,21 +47,21 @@ class Model():
             x_train = np.concatenate((x_train, k), axis=0)
             y_train = np.append(y_train, [i + 10] * len(k))
 
-        perm = np.random.permutation(66000)
+        perm = np.random.permutation(6000*self.num_classes)
         x_temp = x_train.copy()
         y_temp = y_train.copy()
         for i in range(len(perm)):
             x_train[i] = x_temp[perm[i]]
             y_train[i] = y_temp[perm[i]]
 
-        x_train = x_train.reshape(66000, 28, 28, 1)
+        x_train = x_train.reshape(6000*self.num_classes, 28, 28, 1)
 
         """WORKING WITH TEST DATA"""
         for i, k in enumerate(self.augmented_test_images):
             x_test = np.concatenate((x_test, k), axis=0)
             y_test = np.append(y_test, [i + 10] * len(k))
 
-        perm = np.random.permutation(11000)
+        perm = np.random.permutation(1000*self.num_classes)
         x_temp = x_test.copy()
         y_temp = y_test.copy()
         for i in range(len(perm)):
@@ -69,7 +69,7 @@ class Model():
             y_test[i] = y_temp[perm[i]]
 
         print(x_test.shape)
-        x_test = x_test.reshape(11000, 28, 28, 1)
+        x_test = x_test.reshape(1000*self.num_classes, 28, 28, 1)
         print(x_test.shape)
         """CONVERTING DATA"""
         x_train = x_train.astype('float32')
