@@ -4,13 +4,14 @@ import numpy as np
 from PIL import Image
 from src.Pipeline import Pipeline
 
+#import pydot
 
 class Model():
     def __init__(self):
         self.model = None
         self.augmented_test_images = None
         self.augmented_train_images = None
-        self.num_classes = 12
+        self.num_classes = 14
         self.batch_size = 256
         self.epochs = 3
 
@@ -22,18 +23,6 @@ class Model():
         p.random_distortion(probability=0.9, grid_width=4, grid_height=4, magnitude=1)
         self.augmented_train_images = p.sample(6000)
         self.augmented_test_images = p.sample(1000)
-
-        """images = []
-        im = Image.open("synt_plus.png")
-        im = im.convert('L')
-        images.append(im)
-
-        print("Start generating augmented images")
-        self.augmented_train_images = d.perform_operation(images, 6000)
-        self.augmented_test_images = d.perform_operation(images, 1000)
-        for i in range(20):
-            print("save:")
-            Image.fromarray(self.augmented_train_images[0, i].reshape(28, 28)).convert('L').save('test'+str(i)+'.png');"""
 
     def train(self):
         """LOAD MNIST DATABASE"""
@@ -68,16 +57,15 @@ class Model():
             x_test[i] = x_temp[perm[i]]
             y_test[i] = y_temp[perm[i]]
 
-        print(x_test.shape)
         x_test = x_test.reshape(1000*self.num_classes, 28, 28, 1)
-        print(x_test.shape)
+
         """CONVERTING DATA"""
         x_train = x_train.astype('float32')
         x_test = x_test.astype('float32')
         x_train /= 255
         x_test /= 255
-        print(x_train.shape[0], 'train samples')
-        print(x_test.shape[0], 'test samples')
+        print(x_train.shape, 'train samples')
+        print(x_test.shape, 'test samples')
 
         y_train = keras.utils.to_categorical(y_train, self.num_classes)
         y_test = keras.utils.to_categorical(y_test, self.num_classes)
@@ -96,7 +84,8 @@ class Model():
         self.model.add(Dense(self.num_classes, activation='softmax'))
 
         """self.model = Sequential()
-        self.model.add(Dense(512, activation='relu', input_shape=(28, 28, 1)))
+        self.model.add(Flatten(input_shape=(28, 28, 1)))
+        self.model.add(Dense(512, activation='relu'))
         self.model.add(Dropout(0.2))
         self.model.add(Dense(512, activation='relu'))
         self.model.add(Dropout(0.5))
@@ -105,8 +94,9 @@ class Model():
         self.model.compile(loss='categorical_crossentropy',
                            optimizer='rmsprop',
                            metrics=['accuracy'])
-
-        print("SHAPE",x_test.shape)
+        print(self.model.summary())
+        from keras.utils import plot_model
+        plot_model(self.model, to_file='model.png', show_shapes=True)
         history = self.model.fit(x_train, y_train,
                                  batch_size=self.batch_size,
                                  epochs=self.epochs,
@@ -116,6 +106,12 @@ class Model():
         score = self.model.evaluate(x_test, y_test, verbose=1)
         print('Test loss:', score[0])
         print('Test accuracy:', score[1])
+
+        """from keras.utils import plot_model
+        plot_model(self.model, to_file='model.png')"""
+
+        print("SUMMARY")
+        print(self.model.summary())
 
     def testImage(self, img):
         arr1 = np.asarray(img).reshape(1, 28, 28, 1) / 255
