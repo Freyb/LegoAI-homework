@@ -1,10 +1,8 @@
 import keras
 from keras.datasets import mnist
 import numpy as np
-from PIL import Image
 from src.Pipeline import Pipeline
-
-#import pydot
+import matplotlib.pyplot as plt
 
 class Model():
     def __init__(self):
@@ -13,7 +11,7 @@ class Model():
         self.augmented_train_images = None
         self.num_classes = 14
         self.batch_size = 256
-        self.epochs = 3
+        self.epochs = 10
 
     def gen_data(self):
         print("Start generating augmented images")
@@ -64,8 +62,8 @@ class Model():
         x_test = x_test.astype('float32')
         x_train /= 255
         x_test /= 255
-        print(x_train.shape, 'train samples')
-        print(x_test.shape, 'test samples')
+        print(x_train.shape[0], 'train samples')
+        print(x_test.shape[0], 'test samples')
 
         y_train = keras.utils.to_categorical(y_train, self.num_classes)
         y_test = keras.utils.to_categorical(y_test, self.num_classes)
@@ -83,38 +81,45 @@ class Model():
         self.model.add(Dropout(0.5))
         self.model.add(Dense(self.num_classes, activation='softmax'))
 
-        """self.model = Sequential()
-        self.model.add(Flatten(input_shape=(28, 28, 1)))
-        self.model.add(Dense(512, activation='relu'))
-        self.model.add(Dropout(0.2))
-        self.model.add(Dense(512, activation='relu'))
-        self.model.add(Dropout(0.5))
-        self.model.add(Dense(self.num_classes, activation='softmax'))"""
-
         self.model.compile(loss='categorical_crossentropy',
                            optimizer='rmsprop',
                            metrics=['accuracy'])
-        print(self.model.summary())
+
+        """PRINTING SUMMARY"""
+        """print(self.model.summary())
         from keras.utils import plot_model
-        plot_model(self.model, to_file='model.png', show_shapes=True)
+        plot_model(self.model, to_file='model.png', show_shapes=True)"""
+
         history = self.model.fit(x_train, y_train,
                                  batch_size=self.batch_size,
                                  epochs=self.epochs,
                                  verbose=1,
                                  validation_data=(x_test, y_test))
-
+        # summarize history for accuracy
+        plt.plot(history.history['acc'])
+        plt.plot(history.history['val_acc'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
+        # summarize history for loss
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
         score = self.model.evaluate(x_test, y_test, verbose=1)
         print('Test loss:', score[0])
         print('Test accuracy:', score[1])
 
-        """from keras.utils import plot_model
-        plot_model(self.model, to_file='model.png')"""
-
-        print("SUMMARY")
-        print(self.model.summary())
-
     def testImage(self, img):
-        arr1 = np.asarray(img).reshape(1, 28, 28, 1) / 255
-        res1 = self.model.predict(arr1)
-        res1 = np.argmax(res1, axis=1)
-        print(res1)
+        output_vector = [i for i in range(10)] + ['X', '-', '+', '/']
+        img_array = np.asarray(img).reshape(1, 28, 28, 1) / 255
+        res_vector = self.model.predict(img_array)
+        res = np.argmax(res_vector, axis=1)
+        print("Preditction:", output_vector[res[0]])
+        for i in range(14):
+            print(output_vector[i], ":", res_vector[0][i])
