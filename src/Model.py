@@ -4,6 +4,7 @@ import numpy as np
 from src.Pipeline import Pipeline
 import matplotlib.pyplot as plt
 
+
 class Model():
     def __init__(self):
         self.model = None
@@ -11,7 +12,7 @@ class Model():
         self.augmented_train_images = None
         self.num_classes = 14
         self.batch_size = 256
-        self.epochs = 10
+        self.epochs = 5
 
     def gen_data(self):
         print("Start generating augmented images")
@@ -93,25 +94,26 @@ class Model():
         history = self.model.fit(x_train, y_train,
                                  batch_size=self.batch_size,
                                  epochs=self.epochs,
-                                 verbose=1,
-                                 validation_data=(x_test, y_test))
+                                 verbose=2,
+                                 validation_split=0.3,
+                                 shuffle=True)
         # summarize history for accuracy
-        plt.plot(history.history['acc'])
+        """plt.plot(history.history['acc'])
         plt.plot(history.history['val_acc'])
         plt.title('model accuracy')
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
-        plt.show()
+        plt.show()"""
         # summarize history for loss
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
         plt.title('model loss')
         plt.ylabel('loss')
         plt.xlabel('epoch')
-        plt.legend(['train', 'test'], loc='upper left')
+        plt.legend(['train: '+str(history.history['loss'][-1]), 'valid: '+str(history.history['val_loss'][-1])], loc='upper left')
         plt.show()
-        score = self.model.evaluate(x_test, y_test, verbose=1)
+        score = self.model.evaluate(x_test, y_test, verbose=2)
         print('Test loss:', score[0])
         print('Test accuracy:', score[1])
 
