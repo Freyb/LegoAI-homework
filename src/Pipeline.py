@@ -315,7 +315,7 @@ class Pipeline(object):
         # Python's own List exceptions can handle erroneous user input.
         self.operations.pop(operation_index)
 
-    def random_distortion(self, probability, grid_width, grid_height, magnitude):
+    def elastic_distortion(self, probability, grid_width, grid_height, magnitude):
         """
         Performs a random, elastic distortion on an image.
 
