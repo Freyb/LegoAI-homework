@@ -7,6 +7,12 @@ xold, yold = None, None
 image1, drawimg = None, None
 model = Model()
 
+def create_lines(canv):
+    canv.create_line(30, 0, 30, 140, smooth=TRUE, fill="red", width="1")
+    canv.create_line(110, 0, 110, 140, smooth=TRUE, fill="red", width="1")
+    canv.create_line(0, 30, 140, 30, smooth=TRUE, fill="red", width="1")
+    canv.create_line(0, 110, 140, 110, smooth=TRUE, fill="red", width="1")
+
 def testCallback(canv):
     global image1, model
     #image1 = image1.resize((28,28))
@@ -17,6 +23,7 @@ def testCallback(canv):
 def clearCallback(canv):
     global image1, drawimg
     canv.delete('all')
+    create_lines(canv)
     drawimg.rectangle((0, 0, image1.size[0], image1.size[1]), fill=0)
 
 
@@ -33,6 +40,7 @@ def main():
     drawing_area.grid(row=0, column=0, rowspan=2)
     drawing_area.config(width=140, height=140)
     drawing_area.configure(background='black')
+    create_lines(drawing_area)
     drawing_area.bind("<Motion>", motion)
     drawing_area.bind("<ButtonPress-1>", b1down)
     drawing_area.bind("<ButtonRelease-1>", b1up)
